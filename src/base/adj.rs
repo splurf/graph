@@ -1,19 +1,35 @@
-use {
-    super::Vertex,
-    std::{
-        cell::{Ref, RefCell, RefMut},
-        collections::HashMap,
-        hash::Hash,
-        rc::Rc,
-    },
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    collections::HashMap,
+    hash::Hash,
+    rc::Rc,
 };
 
+type Vertex<V, E> = RawVertex<Rc<V>, Rc<E>>;
+
+#[derive(Debug)]
+pub struct RawVertex<V, E> {
+    element: V,
+    incoming: HashMap<V, E>,
+    outgoing: HashMap<V, E>,
+}
+
+impl<V, E> RawVertex<V, E> {
+    pub fn new(element: V) -> Self {
+        Self {
+            element,
+            incoming: HashMap::default(),
+            outgoing: HashMap::default(),
+        }
+    }
+}
+
 #[derive(Default, Debug)]
-pub struct Graph<V, E> {
+pub struct AdjacencyList<V, E> {
     data: HashMap<Rc<V>, Rc<RefCell<Vertex<V, E>>>>,
 }
 
-impl<V: Eq + Hash, E> Graph<V, E> {
+impl<V: Eq + Hash, E> AdjacencyList<V, E> {
     /**
      * Add a new vertex to the graph if the value does the exist
      */
@@ -37,12 +53,12 @@ impl<V: Eq + Hash, E> Graph<V, E> {
         mut v: RefMut<Vertex<V, E>>,
         element: E,
     ) -> Option<Rc<E>> {
-        if u.outgoing().contains_key(v.element()) {
+        if u.outgoing.contains_key(&v.element) {
             None
         } else {
             let edge = Rc::new(element);
-            u.outgoing_mut().insert(v.element().clone(), edge.clone());
-            v.incoming_mut().insert(u.element().clone(), edge.clone());
+            (&mut u.outgoing).insert(v.element.clone(), edge.clone());
+            (&mut v.incoming).insert(u.element.clone(), edge.clone());
             Some(edge)
         }
     }
@@ -51,6 +67,6 @@ impl<V: Eq + Hash, E> Graph<V, E> {
      * Return the edge between two verticies if it exists
      */
     pub fn adjacent(&self, u: Ref<Vertex<V, E>>, v: Ref<Vertex<V, E>>) -> Option<Rc<E>> {
-        u.outgoing().get(v.element()).cloned()
+        u.outgoing.get(&v.element).cloned()
     }
 }

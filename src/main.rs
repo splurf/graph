@@ -1,6 +1,6 @@
 mod base;
 use {
-    base::Graph,
+    base::adj::AdjacencyList,
     std::time::{Duration, SystemTime, SystemTimeError},
 };
 
@@ -13,7 +13,7 @@ fn benchmark<T>(f: impl Fn() -> T) -> Result<Duration, SystemTimeError> {
 }
 
 fn main() {
-    let mut graph = Graph::<&str, u8>::default();
+    let mut graph = AdjacencyList::<&str, u8>::default();
 
     //  Create 3 vertexes
     let u = graph.add_vertex("a").unwrap();
